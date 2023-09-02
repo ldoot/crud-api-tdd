@@ -1,5 +1,5 @@
 const todoController = require("../../controllers/todo.controller");
-const todoModel = require("../../model/todo.model");
+const todoModel = require("../../models/todo.model");
 
 //mocking the create Function using jest so that we will be able to see if the function gets called during one of our tests.
 todoModel.create = jest.fn();
@@ -11,6 +11,6 @@ describe("TodoController.createTodo", () => {
 
   it("should call todoModel.create", () => {
     todoController.createTodo();
-    exoect(todoModel.create).toBeCalled();
+    expect(todoModel.create).toBeCalled();
   });
 });
