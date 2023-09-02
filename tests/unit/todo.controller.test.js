@@ -23,17 +23,17 @@ describe("TodoController.createTodo", () => {
   });
 
   it("should call todoModel.create", () => {
-    let req, res, next;
-
-    // Configure http request and response objects as mocks
-    req = httpMocks.createRequest();
-    res = httpMocks.createResponse();
-    next = null;
-
     // Configure request body as a mock newTodo
     req.body = newTodo;
 
     todoController.createTodo(req, res, next);
     expect(todoModel.create).toBeCalledWith(newTodo);
+  });
+
+  it("should return 201 response", () => {
+    req.body = newTodo;
+    todoController.createTodo(req, res, next);
+
+    expect(res.statusCode).toBe(201);
   });
 });
