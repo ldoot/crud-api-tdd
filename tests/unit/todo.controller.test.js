@@ -14,7 +14,7 @@ beforeEach(() => {
   // Configure http request and response objects as mocks
   req = httpMocks.createRequest();
   res = httpMocks.createResponse();
-  next = null;
+  next = jest.fn();
 });
 
 describe("TodoController.createTodo", () => {
@@ -42,9 +42,16 @@ describe("TodoController.createTodo", () => {
 
   it("should return JSON response body", async () => {
     todoModel.create.mockReturnValue(newTodo);
-
     await todoController.createTodo(req, res, next);
-
     expect(res._getJSONData()).toStrictEqual(newTodo);
+  });
+
+  it("should handle errors", async () => {
+    const errorMessage = { message: "Simulated error" };
+    const rejectedPromise = Promise.reject(errorMessage);
+
+    todoModel.create.mockReturnValue(rejectedPromise);
+    await todoController.createTodo(req, res, next);
+    expect(next).toBeCalledWith(errorMessage);
   });
 });
