@@ -8,6 +8,7 @@ const app = express();
 
 mongodb.connect();
 
+app.use(express.json());
 app.use("/todos", todoRoutes);
 
 app.get("/", (request, response) => {
