@@ -9,7 +9,13 @@ const app = express();
 mongodb.connect();
 
 app.use(express.json());
+
 app.use("/todos", todoRoutes);
+
+// Error handling middleware
+app.use((error, req, res, next) => {
+  res.status(500).json({ message: error.message });
+});
 
 app.get("/", (request, response) => {
   response.json("Hello world!");
