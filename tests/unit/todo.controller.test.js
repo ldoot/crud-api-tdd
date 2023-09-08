@@ -7,9 +7,13 @@ const allTodos = require("../mock-data/all-todos.json");
 //mocking the create Function using jest so that we will be able to see if the function gets called during one of our tests.
 todoModel.create = jest.fn();
 todoModel.find = jest.fn();
+todoModel.findById = jest.fn();
 
 // Http objects for mocking during testing.
 let req, res, next;
+
+// Used to test getTodoById
+const validTodoId = "64f9d9959214a32bc5fc12fa";
 
 //Setup for each test
 beforeEach(() => {
@@ -17,6 +21,35 @@ beforeEach(() => {
   req = httpMocks.createRequest();
   res = httpMocks.createResponse();
   next = jest.fn();
+});
+
+describe("todoController.getTodoById", () => {
+  it("should have getTodoById", () => {
+    expect(typeof todoController.getTodoById).toBe("function");
+  });
+
+  it("should call todoModel.findById with route parameters", async () => {
+    req.params.todoId = validTodoId;
+    await todoController.getTodoById(req, res, next);
+    expect(todoModel.findById).toBeCalledWith(validTodoId);
+  });
+
+  it("should return JSON body and response code 200", async () => {
+    req.params.todoId = validTodoId;
+    todoModel.findById.mockReturnValue(newTodo);
+    await todoController.getTodoById(req, res, next);
+
+    expect(res.statusCode).toBe(200);
+    expect(res._isEndCalled()).toBeTruthy();
+
+    expect(res._getJSONData()).toStrictEqual(newTodo);
+  });
+
+  it("should return JSON response body", async () => {
+    todoModel.create.mockReturnValue(newTodo);
+    await todoController.createTodo(req, res, next);
+    expect(res._getJSONData()).toStrictEqual(newTodo);
+  });
 });
 
 describe("todoController.getTodos", () => {
