@@ -19,4 +19,13 @@ describe(endpointUrl, () => {
     expect(res.statusCode).toBe(500);
     expect(res.body).toStrictEqual({ message: "Todo validation failed: done: Path `done` is required." });
   });
+
+  it("GET " + endpointUrl, async () => {
+    const res = await request(app).get(endpointUrl).send();
+
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body[0].title).toBeDefined();
+    expect(res.body[0].done).toBeDefined();
+  });
 });
