@@ -1,5 +1,34 @@
 const todoModel = require("../models/todo.model");
 
+async function updateTodo(req, res, next) {
+  try {
+    const result = await todoModel.findByIdAndUpdate(req.params.todoId, req.body, { new: true, useFindAndModify: false });
+
+    // If id was not found.
+    if (!result) {
+      res.status(404);
+    } else {
+      res.status(200).json(result);
+    }
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function getTodoById(req, res, next) {
+  try {
+    const todo = await todoModel.findById(req.params.todoId);
+
+    if (todo) {
+      res.status(200).json(todo);
+    } else {
+      res.status(404).send();
+    }
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function getTodos(req, res, next) {
   try {
     const todos = await todoModel.find({});
@@ -19,4 +48,4 @@ async function createTodo(req, res, next) {
   }
 }
 
-module.exports = { getTodos, createTodo };
+module.exports = { getTodoById, getTodos, createTodo, updateTodo };
