@@ -48,4 +48,19 @@ async function createTodo(req, res, next) {
   }
 }
 
-module.exports = { getTodoById, getTodos, createTodo, updateTodo };
+async function deleteTodo(req, res, next) {
+  try {
+    console.log("todo id is ", req.params.todoId);
+    const result = await todoModel.findByIdAndDelete(req.params.todoId);
+
+    if (result) {
+      res.status(200).json(result);
+    } else {
+      res.status(404).send();
+    }
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { getTodoById, getTodos, createTodo, updateTodo, deleteTodo };
