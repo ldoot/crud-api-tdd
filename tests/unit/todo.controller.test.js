@@ -8,6 +8,7 @@ const allTodos = require("../mock-data/all-todos.json");
 todoModel.create = jest.fn();
 todoModel.find = jest.fn();
 todoModel.findById = jest.fn();
+todoModel.findByIdAndUpdate = jest.fn();
 
 // Http objects for mocking during testing.
 let req, res, next;
@@ -21,6 +22,54 @@ beforeEach(() => {
   req = httpMocks.createRequest();
   res = httpMocks.createResponse();
   next = jest.fn();
+});
+
+describe("todoController.updateTodo", () => {
+  it("should have an updateTodo function", () => {
+    expect(typeof todoController.updateTodo).toBe("function");
+  });
+
+  it("should call findByIdAndUpdate", async () => {
+    req.params.todoId = validTodoId;
+    req.body = newTodo;
+    await todoController.updateTodo(req, res, next);
+    expect(todoModel.findByIdAndUpdate).toBeCalledWith(validTodoId, newTodo, { new: true, useFindAndModify: false });
+  });
+
+  it("should return 200 and JSON body", async () => {
+    req.params.todoId = validTodoId;
+    req.body = newTodo;
+    todoModel.findByIdAndUpdate.mockReturnValue(newTodo);
+    await todoController.updateTodo(req, res, next);
+    expect(res.statusCode).toBe(200);
+    expect(res._getJSONData().title).toBe(newTodo.title);
+    expect(res._getJSONData().done).toBe(newTodo.done);
+    expect(res._isEndCalled()).toBe(true);
+  });
+
+  it("should handle errors", async () => {
+    const errorMessage = { message: "Simulated error" };
+    const rejectedPromise = Promise.reject(errorMessage);
+
+    todoModel.findByIdAndUpdate.mockReturnValue(rejectedPromise);
+
+    req.params.todoId = validTodoId;
+    req.body = newTodo;
+
+    await todoController.updateTodo(req, res, next);
+    expect(next).toBeCalledWith(errorMessage);
+  });
+
+  it("should return 404 for non existent todo id", async () => {
+    todoModel.findByIdAndUpdate.mockReturnValue(null);
+
+    req.params.todoId = validTodoId;
+    req.body = newTodo;
+
+    await todoController.updateTodo(req, res, next);
+    expect(res.statusCode).toBe(404);
+    expect(res._isEndCalled).toBeTruthy();
+  });
 });
 
 describe("todoController.getTodoById", () => {
@@ -45,10 +94,20 @@ describe("todoController.getTodoById", () => {
     expect(res._getJSONData()).toStrictEqual(newTodo);
   });
 
-  it("should return JSON response body", async () => {
-    todoModel.create.mockReturnValue(newTodo);
-    await todoController.createTodo(req, res, next);
-    expect(res._getJSONData()).toStrictEqual(newTodo);
+  it("should handle errors", async () => {
+    const errorMessage = { message: "Simulated error" };
+    const rejectedPromise = Promise.reject(errorMessage);
+
+    todoModel.findById.mockReturnValue(rejectedPromise);
+    await todoController.getTodoById(req, res, next);
+    expect(next).toBeCalledWith(errorMessage);
+  });
+
+  it("should return 404 when item does not exist", async () => {
+    todoModel.findById.mockReturnValue(null);
+    await todoController.getTodoById(req, res, next);
+    expect(res.statusCode).toBe(404);
+    expect(res._isEndCalled).toBeTruthy();
   });
 });
 
