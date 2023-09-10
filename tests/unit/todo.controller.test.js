@@ -9,6 +9,7 @@ todoModel.create = jest.fn();
 todoModel.find = jest.fn();
 todoModel.findById = jest.fn();
 todoModel.findByIdAndUpdate = jest.fn();
+todoModel.findByIdAndDelete = jest.fn();
 
 // Http objects for mocking during testing.
 let req, res, next;
@@ -177,5 +178,46 @@ describe("TodoController.createTodo", () => {
     todoModel.create.mockReturnValue(rejectedPromise);
     await todoController.createTodo(req, res, next);
     expect(next).toBeCalledWith(errorMessage);
+  });
+});
+
+describe("todoController.deleteTodo", () => {
+  it("should have deleteTodo function", () => {
+    expect(typeof todoController.deleteTodo).toBe("function");
+  });
+
+  it("should call todoModel.deleteTodo", () => {
+    // Configure request body as a mock newTodo
+
+    req.params.todoId = validTodoId;
+
+    todoController.deleteTodo(req, res, next);
+    expect(todoModel.findByIdAndDelete).toBeCalledWith(validTodoId);
+  });
+
+  it("should return 200 response", async () => {
+    req.params.todoId = validTodoId;
+    todoModel.findByIdAndDelete.mockReturnValue(newTodo);
+    await todoController.deleteTodo(req, res, next);
+
+    expect(res.statusCode).toBe(200);
+    expect(res._isEndCalled()).toBeTruthy();
+  });
+
+  it("should handle errors", async () => {
+    const errorMessage = { message: "Simulated error" };
+    const rejectedPromise = Promise.reject(errorMessage);
+
+    todoModel.findByIdAndDelete.mockReturnValue(rejectedPromise);
+    await todoController.deleteTodo(req, res, next);
+    expect(next).toBeCalledWith(errorMessage);
+  });
+
+  it("should return 404 when item does not exist", async () => {
+    todoModel.findByIdAndDelete.mockReturnValue(null);
+    req.params.todoId = validTodoId;
+    await todoController.deleteTodo(req, res, next);
+    expect(res.statusCode).toBe(404);
+    expect(res._isEndCalled).toBeTruthy();
   });
 });
